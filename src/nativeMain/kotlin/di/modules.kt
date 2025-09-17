@@ -34,6 +34,6 @@ private val defaultAppConfig = AppConfig(
     port = 8080,
   ),
   clientConfig = HostConfig(
-    protocol = Protocol.HTTP, host = "localhost", port = 4096
+    protocol = Protocol.HTTPS, host = "api.anthropic.com", port = 443
   ),
 )
