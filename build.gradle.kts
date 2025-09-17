@@ -46,6 +46,11 @@ kotlin {
       // Serialization
       implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 
+      // Cryptography
+      implementation("dev.whyoleg.cryptography:cryptography-core:0.5.0")
+      implementation("dev.whyoleg.cryptography:cryptography-provider-optimal:0.5.0")
+      implementation("dev.whyoleg.cryptography:cryptography-random:0.5.0")
+
       // DI
       implementation("io.insert-koin:koin-core:4.1.0")
       implementation("io.insert-koin:koin-ktor:4.1.0")
