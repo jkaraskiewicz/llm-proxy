@@ -10,6 +10,7 @@ import di.interceptorsModule
 import di.managersModule
 import di.providersModule
 import di.utilsModule
+import io.ktor.client.engine.curl.Curl
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
@@ -34,14 +35,9 @@ object cli {
 
     try {
       // Create a minimal setup for auth command
-      val httpClient = io.ktor.client.HttpClient(io.ktor.client.engine.cio.CIO) {
+      val httpClient = io.ktor.client.HttpClient(Curl) {
         install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
           json()
-        }
-        engine {
-          https {
-            trustManager = SslSettings.getTrustManager()
-          }
         }
       }
 
@@ -53,9 +49,11 @@ object cli {
         "anthropic" -> {
           authenticateAnthropic(logger, httpClient, tokenStorage, force)
         }
+
         "copilot" -> {
           authenticateCopilot(logger, httpClient, tokenStorage, force)
         }
+
         else -> {
           logger.error("Unsupported provider: $providerName")
           logger.log("Supported providers: anthropic, copilot")
@@ -79,7 +77,12 @@ object cli {
     }.start(wait = true)
   }
 
-  private suspend fun authenticateAnthropic(logger: Logger, httpClient: io.ktor.client.HttpClient, tokenStorage: tokens.TokenStorage, force: Boolean) {
+  private suspend fun authenticateAnthropic(
+    logger: Logger,
+    httpClient: io.ktor.client.HttpClient,
+    tokenStorage: tokens.TokenStorage,
+    force: Boolean,
+  ) {
     val provider = AnthropicSpec()
     val pkce = crypto.PKCE()
     val oAuthService = OAuthService(httpClient, tokenStorage, logger, pkce)
@@ -119,7 +122,12 @@ object cli {
     logger.log("You can now run 'llm-proxy serve' to start the proxy server.")
   }
 
-  private suspend fun authenticateCopilot(logger: Logger, httpClient: io.ktor.client.HttpClient, tokenStorage: tokens.TokenStorage, force: Boolean) {
+  private suspend fun authenticateCopilot(
+    logger: Logger,
+    httpClient: io.ktor.client.HttpClient,
+    tokenStorage: tokens.TokenStorage,
+    force: Boolean,
+  ) {
     val provider = CopilotSpec()
     val deviceOAuthService = DeviceCodeOAuthService(httpClient, tokenStorage, logger)
 
@@ -139,7 +147,11 @@ object cli {
     val deviceCodeResponse = deviceOAuthService.initiateDeviceCodeAuth(provider)
 
     // Step 2: Poll for access token
-    val token = deviceOAuthService.pollForAccessToken(provider, deviceCodeResponse.deviceCode, deviceCodeResponse.interval)
+    val token = deviceOAuthService.pollForAccessToken(
+      provider,
+      deviceCodeResponse.deviceCode,
+      deviceCodeResponse.interval
+    )
 
     logger.log("Successfully authenticated with ${provider.name}!")
     logger.log("You can now run 'llm-proxy serve' to start the proxy server.")

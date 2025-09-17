@@ -6,7 +6,6 @@ import config.Protocol
 import interceptors.ApiKeyInterceptor
 import interceptors.RequestInterceptor
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
 import org.koin.core.module.dsl.named
@@ -20,6 +19,7 @@ import tokens.TokenStorage
 import tokens.FileTokenStorage
 import auth.OAuthService
 import crypto.PKCE
+import io.ktor.client.engine.curl.Curl
 import utils.logger.Logger
 import utils.logger.NativeLogger
 
@@ -33,12 +33,12 @@ val utilsModule = module {
 
 val httpModule = module {
   single<HttpClient> {
-    HttpClient(CIO) {
+    HttpClient(Curl) {
       followRedirects = true
     }
   }
   single<HttpClient> {
-    HttpClient(CIO) {
+    HttpClient(Curl) {
       install(ContentNegotiation) { json() }
     }
   } withOptions {
