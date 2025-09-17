@@ -20,6 +20,7 @@ class TokenManager(
   private val httpClient: HttpClient,
   private val providerSpec: ProviderSpec,
   private val logger: Logger,
+  private val tokenStorage: TokenStorage,
 ) {
   private var currentToken: AuthToken? = null
   private val mutex = Mutex()
@@ -63,11 +64,24 @@ class TokenManager(
 
     logger.log("Token refreshed successfully! New access token is ready.")
 
-    return AuthToken(
+    val newToken = AuthToken(
       type = "oauth",
       refresh = response.newRefreshToken,
       access = response.newAccessToken,
       expires = TimeUtils.currentTimeInMillis() + (response.expiresIn * 1000)
     )
+
+    // Save the refreshed token
+    try {
+      tokenStorage.saveToken(providerSpec.name, newToken)
+      logger.log("Refreshed token saved to storage")
+    } catch (e: Exception) {
+      logger.error("Failed to save refreshed token", e)
+    }
+
+    // Update current token
+    this.currentToken = newToken
+
+    return newToken
   }
 }

@@ -1,0 +1,27 @@
+package providers.copilot
+
+import providers.ProviderSpec
+
+class CopilotSpec : ProviderSpec {
+  override val name = "copilot"
+  override val clientId = "Iv1.b507a08c87ecfe98"
+  override val tokenRefreshUrl = "https://github.com/login/oauth/access_token"
+  override val authorizationUrl = "https://github.com/login/device/code"
+  override val scopes = listOf("user:read")
+
+  override fun getAuthorizationUrl(codeChallenge: String, redirectUri: String, state: String): String {
+    // GitHub Copilot uses device code flow, not authorization code flow
+    // This method isn't used for device flow, but we need to implement it
+    val params = listOf(
+      "client_id=$clientId",
+      "scope=${scopes.joinToString(" ")}"
+    ).joinToString("&")
+
+    return "$authorizationUrl?$params"
+  }
+
+  // GitHub Copilot specific configuration
+  val deviceCodeUrl = "https://github.com/login/device/code"
+  val accessTokenUrl = "https://github.com/login/oauth/access_token"
+  val userAgent = "GitHubCopilotChat/0.26.7"
+}

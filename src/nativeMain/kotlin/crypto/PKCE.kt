@@ -5,7 +5,7 @@ import dev.whyoleg.cryptography.algorithms.SHA256
 import dev.whyoleg.cryptography.random.CryptographyRandom
 import utils.crypto.BaseUtils.toBase64UrlSafe
 
-object PKCE {
+class PKCE {
   // Generate a secure random string for the verifier
   fun generateVerifier(byteLength: Int = 64): String {
     val randomBytes = CryptographyRandom.nextBytes(byteLength)
@@ -19,5 +19,12 @@ object PKCE {
     // Hash the verifier bytes
     val digest = sha256.hasher().hash(verifier.encodeToByteArray())
     return digest.toBase64UrlSafe()
+  }
+
+  // Generate both verifier and challenge at once
+  suspend fun generatePKCE(): Pair<String, String> {
+    val verifier = generateVerifier()
+    val challenge = generateChallenge(verifier)
+    return Pair(challenge, verifier)
   }
 }

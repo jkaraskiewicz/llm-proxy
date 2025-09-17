@@ -39,6 +39,10 @@ kotlin {
       implementation("io.ktor:ktor-client-core:3.2.3")
       implementation("io.ktor:ktor-client-cio:3.2.3")
       implementation("io.ktor:ktor-client-content-negotiation:3.2.3")
+      implementation("io.ktor:ktor-client-curl:3.2.3")
+
+      // TLS support for Native
+      implementation("io.ktor:ktor-network-tls:3.2.3")
 
       // Ktor serialization
       implementation("io.ktor:ktor-serialization-kotlinx-json:3.2.3")
@@ -54,6 +58,9 @@ kotlin {
       // DI
       implementation("io.insert-koin:koin-core:4.1.0")
       implementation("io.insert-koin:koin-ktor:4.1.0")
+
+      // CLI
+      implementation("com.github.ajalt.clikt:clikt:5.0.3")
     }
   }
 }

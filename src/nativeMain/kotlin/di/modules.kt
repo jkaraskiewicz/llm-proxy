@@ -14,8 +14,12 @@ import org.koin.core.module.dsl.withOptions
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import providers.ProviderSpec
-import providers.anthropic.AnthropicSpec
+import providers.ProviderFactory
 import tokens.TokenManager
+import tokens.TokenStorage
+import tokens.FileTokenStorage
+import auth.OAuthService
+import crypto.PKCE
 import utils.logger.Logger
 import utils.logger.NativeLogger
 
@@ -43,17 +47,23 @@ val httpModule = module {
 }
 
 val managersModule = module {
-  single<TokenManager> { TokenManager(get(named("token")), get(), get()) }
+  single<TokenManager> { TokenManager(get(named("token")), get(), get(), get()) }
 }
 
 val providersModule = module {
-  single<ProviderSpec> { AnthropicSpec() }
+  single<ProviderSpec> { ProviderFactory.getDefaultProvider() }
 }
 
 val interceptorsModule = module {
   single<RequestInterceptor> {
     ApiKeyInterceptor()
   }
+}
+
+val authModule = module {
+  single<TokenStorage> { FileTokenStorage(get()) }
+  single<PKCE> { PKCE() }
+  single<OAuthService> { OAuthService(get(named("token")), get(), get(), get()) }
 }
 
 private val defaultAppConfig = AppConfig(
