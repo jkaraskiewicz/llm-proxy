@@ -38,6 +38,11 @@ object cli {
         install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
           json()
         }
+        engine {
+          https {
+            trustManager = SslSettings.getTrustManager()
+          }
+        }
       }
 
       val tokenStorage = FileTokenStorage(logger)
