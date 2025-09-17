@@ -50,5 +50,7 @@ data class AccessTokenError(
   @SerialName("error")
   val error: String,
   @SerialName("error_description")
-  val errorDescription: String? = null
+  val errorDescription: String? = null,
+  @SerialName("error_uri")
+  val errorUri: String? = null
 )
