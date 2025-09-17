@@ -2,6 +2,9 @@ import config.AppConfig
 import config.toUrl
 import di.applicationModule
 import di.httpModule
+import di.interceptorsModule
+import di.managersModule
+import di.providersModule
 import di.utilsModule
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
@@ -22,7 +25,10 @@ fun main() {
 
 private fun Application.configureDI() {
   install(Koin) {
-    modules(applicationModule, utilsModule, httpModule)
+    modules(
+      applicationModule, utilsModule, httpModule, interceptorsModule, managersModule,
+      providersModule,
+    )
   }
 }
 
