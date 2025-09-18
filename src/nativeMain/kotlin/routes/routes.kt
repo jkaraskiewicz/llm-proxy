@@ -19,14 +19,13 @@ import org.koin.ktor.ext.inject
 fun Application.configureRouting() {
   val appConfig by inject<AppConfig>()
   val client by inject<HttpClient>()
-  val interceptors by inject<List<RequestInterceptor>>()
+  val interceptor by inject<RequestInterceptor>()
 
   routing {
     route("{...}") {
       handle {
         val forwardUrl = "${appConfig.clientConfig.toUrl()}${call.request.uri}"
-        val proxiedRequest =
-          interceptors.fold(call.request) { request, interceptor -> interceptor.intercept(request) }
+        val proxiedRequest = interceptor.intercept(call.request)
         val response = client.request(forwardUrl) {
           // Method
           method = proxiedRequest.httpMethod

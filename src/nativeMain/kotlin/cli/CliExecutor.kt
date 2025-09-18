@@ -3,12 +3,14 @@ package cli
 import auth.DeviceCodeOAuthService
 import auth.OAuthService
 import config.AppConfig
-import di.applicationModule
+import di.configModule
 import di.authModule
+import di.domainModule
 import di.httpModule
 import di.interceptorsModule
 import di.managersModule
 import di.providersModule
+import di.storageModule
 import di.utilsModule
 import io.ktor.client.engine.curl.Curl
 import io.ktor.serialization.kotlinx.json.json
@@ -41,7 +43,8 @@ object cli {
         }
       }
 
-      val tokenStorage = FileTokenStorage(logger)
+      val fileSystemStorage = infrastructure.storage.NativeFileSystemStorage(logger)
+      val tokenStorage = FileTokenStorage(logger, fileSystemStorage)
       val pkce = crypto.PKCE()
       val oAuthService = OAuthService(httpClient, tokenStorage, logger, pkce)
 
@@ -89,16 +92,16 @@ object cli {
 
     // Check if we already have a valid token
     if (!force) {
-      val existingToken = oAuthService.loadStoredToken(provider.name)
+      val existingToken = oAuthService.loadStoredToken(provider.name.value)
       if (existingToken != null) {
-        logger.log("Found existing token for ${provider.name}")
+        logger.log("Found existing token for ${provider.name.value}")
         logger.log("Token expires at: ${existingToken.expires}")
         logger.log("Use '--force' to re-authenticate")
         return
       }
     }
 
-    logger.log("Starting OAuth authentication for ${provider.name}...")
+    logger.log("Starting OAuth authentication for ${provider.name.value}...")
 
     // Step 1: Initiate OAuth flow
     val (codeVerifier, state) = oAuthService.initiateAuth(provider)
@@ -117,7 +120,7 @@ object cli {
     logger.log("Exchanging authorization code for tokens...")
     val token = oAuthService.exchangeCodeForToken(provider, authorizationCode, codeVerifier)
 
-    logger.log("Successfully authenticated with ${provider.name}!")
+    logger.log("Successfully authenticated with ${provider.name.value}!")
     logger.log("Token expires at: ${token.expires}")
     logger.log("You can now run 'llm-proxy serve' to start the proxy server.")
   }
@@ -133,15 +136,15 @@ object cli {
 
     // Check if we already have a valid token
     if (!force) {
-      val existingToken = deviceOAuthService.loadStoredToken(provider.name)
+      val existingToken = deviceOAuthService.loadStoredToken(provider.name.value)
       if (existingToken != null) {
-        logger.log("Found existing token for ${provider.name}")
+        logger.log("Found existing token for ${provider.name.value}")
         logger.log("Use '--force' to re-authenticate")
         return
       }
     }
 
-    logger.log("Starting device code authentication for ${provider.name}...")
+    logger.log("Starting device code authentication for ${provider.name.value}...")
 
     // Step 1: Get device code
     val deviceCodeResponse = deviceOAuthService.initiateDeviceCodeAuth(provider)
@@ -153,7 +156,7 @@ object cli {
       deviceCodeResponse.interval
     )
 
-    logger.log("Successfully authenticated with ${provider.name}!")
+    logger.log("Successfully authenticated with ${provider.name.value}!")
     logger.log("You can now run 'llm-proxy serve' to start the proxy server.")
   }
 
@@ -168,8 +171,8 @@ object cli {
   private fun Application.configureDI() {
     install(Koin) {
       modules(
-        applicationModule, utilsModule, httpModule, interceptorsModule, managersModule,
-        providersModule, authModule
+        configModule, utilsModule, httpModule, interceptorsModule, managersModule,
+        providersModule, storageModule, authModule, domainModule, di.applicationModule
       )
     }
   }
@@ -189,13 +192,13 @@ object cli {
 
     try {
       runBlocking {
-        val token = tokenStorage.loadToken(providerSpec.name)
+        val token = tokenStorage.loadToken(providerSpec.name.value)
         if (token != null) {
           tokenManager.setInitialToken(token)
-          logger.log("Loaded stored token for ${providerSpec.name}")
+          logger.log("Loaded stored token for ${providerSpec.name.value}")
         } else {
-          logger.log("No stored token found for ${providerSpec.name}")
-          logger.log("Run './llm-proxy auth ${providerSpec.name}' to authenticate")
+          logger.log("No stored token found for ${providerSpec.name.value}")
+          logger.log("Run './llm-proxy auth ${providerSpec.name.value}' to authenticate")
         }
       }
     } catch (e: Exception) {

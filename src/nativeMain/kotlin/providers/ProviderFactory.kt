@@ -5,9 +5,14 @@ import providers.copilot.CopilotSpec
 
 object ProviderFactory {
   fun getProvider(name: String): ProviderSpec? {
-    return when (name.lowercase()) {
-      "anthropic" -> AnthropicSpec()
-      "copilot" -> CopilotSpec()
+    val providerName = ProviderName.fromValue(name.lowercase())
+    return getProvider(providerName)
+  }
+
+  fun getProvider(name: ProviderName): ProviderSpec? {
+    return when (name) {
+      ProviderName.ANTHROPIC -> AnthropicSpec()
+      ProviderName.COPILOT -> CopilotSpec()
       else -> null
     }
   }
@@ -16,7 +21,7 @@ object ProviderFactory {
     return AnthropicSpec()
   }
 
-  fun getSupportedProviders(): List<String> {
-    return listOf("anthropic", "copilot")
+  fun getSupportedProviders(): List<ProviderName> {
+    return listOf(ProviderName.ANTHROPIC, ProviderName.COPILOT)
   }
 }

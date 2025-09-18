@@ -1,7 +1,7 @@
 package interceptors
 
-import io.ktor.server.routing.RoutingRequest
+import io.ktor.server.request.ApplicationRequest
 
 interface RequestInterceptor {
-  fun intercept(request: RoutingRequest): RoutingRequest
+  fun intercept(request: ApplicationRequest): ApplicationRequest
 }

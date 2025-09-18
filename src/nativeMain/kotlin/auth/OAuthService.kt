@@ -11,7 +11,9 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import providers.ProviderSpec
 import tokens.TokenStorage
-import tokens.anthropic.AuthToken
+import tokens.AuthToken
+import tokens.GrantType
+import tokens.TokenType
 import utils.logger.Logger
 import utils.time.TimeUtils
 import kotlin.random.Random
@@ -19,7 +21,7 @@ import kotlin.random.Random
 @Serializable
 data class TokenExchangeRequest(
   @SerialName("grant_type")
-  val grantType: String = "authorization_code",
+  val grantType: GrantType = GrantType.AUTHORIZATION_CODE,
   @SerialName("client_id")
   val clientId: String,
   @SerialName("code")
@@ -83,14 +85,14 @@ class OAuthService(
     }.body<TokenExchangeResponse>()
 
     val authToken = AuthToken(
-      type = "oauth",
+      type = TokenType.OAUTH,
       access = response.accessToken,
       refresh = response.refreshToken,
       expires = TimeUtils.currentTimeInMillis() + (response.expiresIn * 1000)
     )
 
     // Save token to storage
-    tokenStorage.saveToken(provider.name, authToken)
+    tokenStorage.saveToken(provider.name.value, authToken)
 
     logger.log("Successfully exchanged authorization code for tokens")
     return authToken

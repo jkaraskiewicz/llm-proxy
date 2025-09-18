@@ -11,12 +11,14 @@ import kotlinx.coroutines.delay
 import kotlinx.serialization.json.Json
 import providers.copilot.CopilotSpec
 import tokens.TokenStorage
-import tokens.anthropic.AuthToken
-import tokens.copilot.AccessTokenError
-import tokens.copilot.AccessTokenRequest
-import tokens.copilot.AccessTokenResponse
-import tokens.copilot.DeviceCodeRequest
-import tokens.copilot.DeviceCodeResponse
+import tokens.AccessTokenError
+import tokens.AccessTokenRequest
+import tokens.AccessTokenResponse
+import tokens.AuthToken
+import tokens.DeviceCodeRequest
+import tokens.DeviceCodeResponse
+import tokens.OAuthError
+import tokens.TokenType
 import utils.logger.Logger
 import utils.time.TimeUtils
 
@@ -82,14 +84,14 @@ class DeviceCodeOAuthService(
           val accessTokenResponse = Json.decodeFromString<AccessTokenResponse>(responseText)
 
           val authToken = AuthToken(
-            type = "bearer",
+            type = TokenType.BEARER,
             access = accessTokenResponse.accessToken,
             refresh = "", // GitHub doesn't provide refresh tokens for device flow
             expires = TimeUtils.currentTimeInMillis() + (365L * 24 * 60 * 60 * 1000) // 1 year default
           )
 
           // Save token to storage
-          tokenStorage.saveToken(provider.name, authToken)
+          tokenStorage.saveToken(provider.name.value, authToken)
           logger.log("Successfully obtained access token for ${provider.name}")
 
           return authToken
@@ -98,27 +100,27 @@ class DeviceCodeOAuthService(
           val errorResponse = Json.decodeFromString<AccessTokenError>(responseText)
 
           when (errorResponse.error) {
-            "authorization_pending" -> {
+            OAuthError.AUTHORIZATION_PENDING -> {
               logger.log("Authorization pending, retrying in ${interval}s...")
               delay(interval * 1000L)
               continue
             }
-            "slow_down" -> {
+            OAuthError.SLOW_DOWN -> {
               logger.log("Polling too fast, slowing down...")
               delay((interval + 5) * 1000L)
               continue
             }
-            "expired_token" -> {
+            OAuthError.EXPIRED_TOKEN -> {
               logger.error("Device code expired")
               throw Exception("Device code expired. Please restart the authentication process.")
             }
-            "access_denied" -> {
+            OAuthError.ACCESS_DENIED -> {
               logger.error("Access denied by user")
               throw Exception("Access denied by user")
             }
             else -> {
-              logger.error("OAuth error: ${errorResponse.error} - ${errorResponse.errorDescription}")
-              throw Exception("OAuth error: ${errorResponse.error}")
+              logger.error("OAuth error: ${errorResponse.error.value} - ${errorResponse.errorDescription}")
+              throw Exception("OAuth error: ${errorResponse.error.value}")
             }
           }
         }

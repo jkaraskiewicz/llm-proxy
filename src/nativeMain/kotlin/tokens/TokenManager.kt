@@ -9,10 +9,10 @@ import io.ktor.http.contentType
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import providers.ProviderSpec
-import tokens.anthropic.AuthToken
-import tokens.anthropic.RefreshTokenRequest
-import tokens.anthropic.RefreshTokenResponse
-import tokens.anthropic.isExpired
+import tokens.AuthToken
+import tokens.RefreshTokenRequest
+import tokens.RefreshTokenResponse
+import tokens.isExpired
 import utils.logger.Logger
 import utils.time.TimeUtils
 
@@ -65,7 +65,7 @@ class TokenManager(
     logger.log("Token refreshed successfully! New access token is ready.")
 
     val newToken = AuthToken(
-      type = "oauth",
+      type = TokenType.OAUTH,
       refresh = response.newRefreshToken,
       access = response.newAccessToken,
       expires = TimeUtils.currentTimeInMillis() + (response.expiresIn * 1000)
@@ -73,7 +73,7 @@ class TokenManager(
 
     // Save the refreshed token
     try {
-      tokenStorage.saveToken(providerSpec.name, newToken)
+      tokenStorage.saveToken(providerSpec.name.value, newToken)
       logger.log("Refreshed token saved to storage")
     } catch (e: Exception) {
       logger.error("Failed to save refreshed token", e)

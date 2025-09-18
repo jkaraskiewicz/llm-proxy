@@ -1,13 +1,16 @@
 package providers.copilot
 
+import providers.AuthenticationScheme
+import providers.ProviderName
 import providers.ProviderSpec
 
 class CopilotSpec : ProviderSpec {
-  override val name = "copilot"
+  override val name = ProviderName.COPILOT
   override val clientId = "Iv1.b507a08c87ecfe98"
   override val tokenRefreshUrl = "https://github.com/login/oauth/access_token"
   override val authorizationUrl = "https://github.com/login/device/code"
   override val scopes = listOf("user:read")
+  override val authenticationScheme = AuthenticationScheme.BearerToken
 
   override fun getAuthorizationUrl(codeChallenge: String, redirectUri: String, state: String): String {
     // GitHub Copilot uses device code flow, not authorization code flow
