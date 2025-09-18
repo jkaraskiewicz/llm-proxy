@@ -21,6 +21,8 @@ import io.ktor.server.engine.embeddedServer
 import kotlinx.coroutines.runBlocking
 import org.koin.ktor.ext.get
 import org.koin.ktor.plugin.Koin
+import providers.ProviderFactory
+import providers.ProviderName
 import providers.ProviderSpec
 import providers.anthropic.AnthropicSpec
 import providers.copilot.CopilotSpec
@@ -48,18 +50,23 @@ object cli {
       val pkce = crypto.PKCE()
       val oAuthService = OAuthService(httpClient, tokenStorage, logger, pkce)
 
-      when (providerName.lowercase()) {
-        "anthropic" -> {
+      val provider = ProviderFactory.getProvider(providerName)
+      if (provider == null) {
+        logger.error("Unsupported provider: $providerName")
+        logger.log("Supported providers: anthropic, copilot")
+        httpClient.close()
+        return
+      }
+
+      when (provider.name) {
+        ProviderName.ANTHROPIC -> {
           authenticateAnthropic(logger, httpClient, tokenStorage, force)
         }
-
-        "copilot" -> {
+        ProviderName.COPILOT -> {
           authenticateCopilot(logger, httpClient, tokenStorage, force)
         }
-
         else -> {
           logger.error("Unsupported provider: $providerName")
-          logger.log("Supported providers: anthropic, copilot")
           httpClient.close()
           return
         }
@@ -158,14 +165,6 @@ object cli {
 
     logger.log("Successfully authenticated with ${provider.name.value}!")
     logger.log("You can now run 'llm-proxy serve' to start the proxy server.")
-  }
-
-  private fun getProvider(name: String): ProviderSpec? {
-    return when (name.lowercase()) {
-      "anthropic" -> AnthropicSpec()
-      "copilot" -> CopilotSpec()
-      else -> null
-    }
   }
 
   private fun Application.configureDI() {

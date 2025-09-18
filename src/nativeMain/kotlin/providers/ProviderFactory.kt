@@ -21,7 +21,4 @@ object ProviderFactory {
     return AnthropicSpec()
   }
 
-  fun getSupportedProviders(): List<ProviderName> {
-    return listOf(ProviderName.ANTHROPIC, ProviderName.COPILOT)
-  }
 }

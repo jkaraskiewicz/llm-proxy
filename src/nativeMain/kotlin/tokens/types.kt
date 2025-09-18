@@ -5,12 +5,6 @@ import kotlinx.serialization.Serializable
 import utils.time.TimeUtils
 
 @Serializable
-data class TokenData(
-  @SerialName("anthropic")
-  val anthropic: AuthToken,
-)
-
-@Serializable
 data class AuthToken(
   @SerialName("type")
   val type: TokenType,

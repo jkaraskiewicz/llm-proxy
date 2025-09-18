@@ -14,12 +14,6 @@ enum class OAuthError(val value: String) {
   SLOW_DOWN("slow_down"),
   EXPIRED_TOKEN("expired_token"),
   ACCESS_DENIED("access_denied"),
-  INVALID_REQUEST("invalid_request"),
-  INVALID_CLIENT("invalid_client"),
-  INVALID_GRANT("invalid_grant"),
-  UNAUTHORIZED_CLIENT("unauthorized_client"),
-  UNSUPPORTED_GRANT_TYPE("unsupported_grant_type"),
-  INVALID_SCOPE("invalid_scope"),
   UNKNOWN("unknown");
 
   companion object {
