@@ -14,6 +14,7 @@ import io.ktor.server.request.receiveChannel
 import io.ktor.server.request.uri
 import io.ktor.server.response.respond
 import io.ktor.server.routing.*
+import io.ktor.util.filter
 import org.koin.ktor.ext.inject
 
 fun Application.configureRouting() {
@@ -27,25 +28,14 @@ fun Application.configureRouting() {
         val forwardUrl = "${appConfig.clientConfig.toUrl()}${call.request.uri}"
         val proxiedRequest = interceptor.intercept(call.request)
         val response = client.request(forwardUrl) {
-          // Method
           method = proxiedRequest.httpMethod
-
-          // Body
           setBody(call.receiveChannel())
-
-          // Headers
-          proxiedRequest.headers.forEach { key, values ->
-            if (!HttpHeaders.isUnsafe(key)) {
-              headers.appendAll(key, values)
-            }
-          }
+          headers.appendAll(proxiedRequest.headers.filter { key, _ -> !HttpHeaders.isUnsafe(key) })
         }
 
         response.headers.forEach { key, values ->
-          if (!HttpHeaders.isUnsafe(key)) {
-            values.forEach { value ->
-              call.response.headers.append(key, value)
-            }
+          values.forEach { value ->
+            call.response.headers.append(key, value)
           }
         }
 

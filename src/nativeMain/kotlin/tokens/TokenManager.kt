@@ -8,11 +8,13 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import providers.ProviderSpec
-import tokens.AuthToken
-import tokens.RefreshTokenRequest
-import tokens.RefreshTokenResponse
-import tokens.isExpired
+import providers.specs.ProviderSpec
+import tokens.store.TokenStorage
+import tokens.types.AuthToken
+import tokens.types.RefreshTokenRequest
+import tokens.types.RefreshTokenResponse
+import tokens.types.TokenType
+import tokens.types.isExpired
 import utils.logger.Logger
 import utils.time.TimeUtils
 
@@ -71,13 +73,8 @@ class TokenManager(
       expires = TimeUtils.currentTimeInMillis() + (response.expiresIn * 1000)
     )
 
-    // Save the refreshed token
-    try {
-      tokenStorage.saveToken(providerSpec.name.value, newToken)
-      logger.log("Refreshed token saved to storage")
-    } catch (e: Exception) {
-      logger.error("Failed to save refreshed token", e)
-    }
+    tokenStorage.saveToken(newToken)
+    logger.log("Refreshed token saved to storage")
 
     // Update current token
     this.currentToken = newToken

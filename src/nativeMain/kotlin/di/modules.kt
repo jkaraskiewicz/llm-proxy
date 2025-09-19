@@ -1,8 +1,9 @@
 package di
 
+import auth.AnthropicAuthenticationService
+import auth.AuthenticationService
+import auth.CopilotAuthenticationService
 import config.AppConfig
-import config.HostConfig
-import config.Protocol
 import interceptors.ApiKeyInterceptor
 import interceptors.RequestInterceptor
 import io.ktor.client.HttpClient
@@ -12,23 +13,32 @@ import org.koin.core.module.dsl.named
 import org.koin.core.module.dsl.withOptions
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
-import providers.ProviderSpec
-import providers.ProviderFactory
+import providers.specs.ProviderSpec
 import tokens.TokenManager
-import tokens.TokenStorage
-import tokens.FileTokenStorage
-import auth.OAuthService
-import crypto.PKCE
+import tokens.store.TokenStorage
+import tokens.store.FileTokenStorage
+import auth.oauth.DeviceCodeOAuthService
+import auth.oauth.OAuthService
+import config.DEFAULT_APP_CONFIG
+import config.ProviderType
+import storage.FileSystemStorage
+import storage.NativeFileSystemStorage
 import io.ktor.client.engine.curl.Curl
+import providers.specs.anthropic.AnthropicSpec
+import providers.specs.copilot.CopilotSpec
 import utils.logger.Logger
 import utils.logger.NativeLogger
 
 val configModule = module {
-  single<AppConfig> { defaultAppConfig }
+  single<AppConfig> { DEFAULT_APP_CONFIG }
 }
 
 val utilsModule = module {
   single<Logger> { NativeLogger() }
+}
+
+val storageModule = module {
+  single<FileSystemStorage> { NativeFileSystemStorage(get()) }
 }
 
 val httpModule = module {
@@ -42,54 +52,46 @@ val httpModule = module {
       install(ContentNegotiation) { json() }
     }
   } withOptions {
-    named("token")
+    named("auth")
   }
-}
-
-val managersModule = module {
-  single<TokenManager> { TokenManager(get(named("token")), get(), get(), get()) }
-}
-
-val domainModule = module {
-  single<domain.auth.AuthRepository> { infrastructure.auth.AuthRepositoryImpl(get()) }
-  single<domain.auth.AuthService> { infrastructure.auth.AuthServiceImpl(get(named("token")), get(), get(), get()) }
-  single<domain.tokens.TokenService> { infrastructure.tokens.TokenServiceImpl(get(), get(), get(), get()) }
-}
-
-val applicationModule = module {
-  single<application.auth.AuthenticateProviderUseCase> { application.auth.AuthenticateProviderUseCase(get(), get(), get()) }
-  single<application.tokens.GetValidTokenUseCase> { application.tokens.GetValidTokenUseCase(get(), get()) }
-}
-
-val providersModule = module {
-  single<ProviderSpec> { ProviderFactory.getDefaultProvider() }
-}
-
-val interceptorsModule = module {
   single<RequestInterceptor> {
-    ApiKeyInterceptor(get(), get(), get())
+    ApiKeyInterceptor(get(), get())
   }
 }
 
-val storageModule = module {
-  single<infrastructure.storage.FileSystemStorage> { infrastructure.storage.NativeFileSystemStorage(get()) }
+val tokenModule = module {
+  single<TokenManager> { TokenManager(get(named("auth")), get(), get(), get()) }
+  single<TokenStorage> { FileTokenStorage(get(), get(), get(), get()) }
 }
 
-val authModule = module {
-  single<TokenStorage> { FileTokenStorage(get(), get()) }
-  single<PKCE> { PKCE() }
-  single<OAuthService> { OAuthService(get(named("token")), get(), get(), get()) }
-  single<auth.DeviceCodeOAuthService> { auth.DeviceCodeOAuthService(get(named("token")), get(), get()) }
-  single<auth.AuthServiceFactory> { auth.AuthServiceFactory() }
+fun authModule(providerType: ProviderType) = module {
+  single<AuthenticationService> {
+    when (providerType) {
+      ProviderType.ANTHROPIC -> AnthropicAuthenticationService(get(), get(), get())
+      ProviderType.COPILOT -> CopilotAuthenticationService(get(), get(), get())
+    }
+  }
+  single<OAuthService> {
+    OAuthService(
+      get(named("auth")),
+      get(),
+      get(),
+      get(),
+      get(),
+    )
+  }
+  single<DeviceCodeOAuthService> {
+    DeviceCodeOAuthService(
+      get(named("auth")),
+      get(),
+      get(),
+      get(),
+    )
+  }
 }
 
-private val defaultAppConfig = AppConfig(
-  serverConfig = HostConfig(
-    protocol = Protocol.HTTP,
-    host = "0.0.0.0",
-    port = 8080,
-  ),
-  clientConfig = HostConfig(
-    protocol = Protocol.HTTPS, host = "api.anthropic.com", port = 443
-  ),
-)
+fun providersModule(providerType: ProviderType) = module {
+  single<AnthropicSpec> { AnthropicSpec() }
+  single<CopilotSpec> { CopilotSpec() }
+  single<ProviderSpec> { providerType.getProviderSpec() }
+}
