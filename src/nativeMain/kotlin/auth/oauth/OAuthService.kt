@@ -1,12 +1,12 @@
 package auth.oauth
 
-import config.AppConfig
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import io.ktor.http.encodeURLPath
 import providers.specs.ProviderSpec
 import tokens.store.TokenStorage
 import tokens.types.AuthToken
@@ -28,7 +28,7 @@ class OAuthService(
     val (codeChallenge, codeVerifier) = PKCE.generatePKCE()
     val state = generateRandomString(32)
 
-    val authUrl = providerSpec.getAuthorizationUrl(codeChallenge, state)
+    val authUrl = providerSpec.getAuthorizationUrl(codeChallenge, state).encodeURLPath()
 
     logger.log("Generated authorization URL for ${providerSpec.name}")
     logger.log("Please open the following URL in your browser:")
