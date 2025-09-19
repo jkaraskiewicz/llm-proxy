@@ -77,7 +77,6 @@ fun authModule(providerType: ProviderType) = module {
       get(),
       get(),
       get(),
-      get(),
     )
   }
   single<DeviceCodeOAuthService> {

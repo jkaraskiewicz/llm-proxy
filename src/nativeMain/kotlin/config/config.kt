@@ -10,5 +10,4 @@ val DEFAULT_APP_CONFIG = AppConfig(
     protocol = Protocol.HTTPS, host = "api.anthropic.com", port = 443
   ),
   tokensFilePath = ".llm-proxy-tokens.json",
-  redirectUri = "http://localhost:3000/callback"
 )

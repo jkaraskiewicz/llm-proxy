@@ -8,7 +8,6 @@ data class AppConfig(
   val serverConfig: HostConfig,
   val clientConfig: HostConfig,
   val tokensFilePath: String,
-  val redirectUri: String,
 )
 
 data class HostConfig(

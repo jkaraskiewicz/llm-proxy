@@ -22,20 +22,18 @@ class OAuthService(
   private val httpClient: HttpClient,
   private val tokenStorage: TokenStorage,
   private val logger: Logger,
-  private val appConfig: AppConfig,
   private val providerSpec: ProviderSpec,
 ) {
   suspend fun initiateAuth(): Pair<String, String> {
     val (codeChallenge, codeVerifier) = PKCE.generatePKCE()
     val state = generateRandomString(32)
 
-    val authUrl = providerSpec.getAuthorizationUrl(codeChallenge, appConfig.redirectUri, state)
+    val authUrl = providerSpec.getAuthorizationUrl(codeChallenge, state)
 
     logger.log("Generated authorization URL for ${providerSpec.name}")
     logger.log("Please open the following URL in your browser:")
     logger.log(authUrl)
     logger.log("")
-    logger.log("After authorization, you'll be redirected to ${appConfig.redirectUri} with a code parameter.")
 
     return Pair(codeVerifier, state)
   }
@@ -47,7 +45,7 @@ class OAuthService(
     val request = TokenExchangeRequest(
       clientId = providerSpec.clientId,
       code = authorizationCode,
-      redirectUri = appConfig.redirectUri,
+      redirectUri = providerSpec.redirectUri,
       codeVerifier = codeVerifier
     )
 

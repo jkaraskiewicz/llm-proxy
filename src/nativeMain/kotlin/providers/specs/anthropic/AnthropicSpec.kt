@@ -9,12 +9,12 @@ class AnthropicSpec : ProviderSpec {
   override val clientId = "9d1c250a-e61b-44d9-88ed-5944d1962f5e"
   override val tokenRefreshUrl = "https://claude.ai/v1/oauth/token"
   override val authorizationUrl = "https://claude.ai/oauth/authorize"
+  override val redirectUri = "https://console.anthropic.com/oauth/code/callback"
   override val scopes = listOf("org:create_api_key", "user:profile", "user:inference")
   override val authenticationScheme = AuthenticationScheme.ApiKey
 
   override fun getAuthorizationUrl(
     codeChallenge: String,
-    redirectUri: String,
     state: String,
   ): String {
     val params = listOf(

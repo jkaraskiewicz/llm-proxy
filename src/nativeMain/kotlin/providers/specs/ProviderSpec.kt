@@ -8,8 +8,9 @@ interface ProviderSpec {
   val clientId: String
   val tokenRefreshUrl: String
   val authorizationUrl: String
+  val redirectUri: String
   val scopes: List<String>
   val authenticationScheme: AuthenticationScheme
 
-  fun getAuthorizationUrl(codeChallenge: String, redirectUri: String, state: String): String
+  fun getAuthorizationUrl(codeChallenge: String, state: String): String
 }
