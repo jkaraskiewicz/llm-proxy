@@ -28,12 +28,11 @@ class OAuthService(
     val (codeChallenge, codeVerifier) = PKCE.generatePKCE()
     val state = generateRandomString(32)
 
-    val authUrl = providerSpec.getAuthorizationUrl(codeChallenge, state).encodeURLPath()
+    val authUrl = providerSpec.getAuthorizationUrl(codeChallenge, state)
 
     logger.log("Generated authorization URL for ${providerSpec.name}")
     logger.log("Please open the following URL in your browser:")
     logger.log(authUrl)
-    logger.log("")
 
     return Pair(codeVerifier, state)
   }

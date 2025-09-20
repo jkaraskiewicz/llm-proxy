@@ -21,7 +21,7 @@ class AnthropicSpec : ProviderSpec {
       "response_type=code",
       "client_id=$clientId",
       "redirect_uri=$redirectUri",
-      "scope=${scopes.joinToString(" ")}",
+      "scope=${scopes.joinToString("+")}",
       "code_challenge=$codeChallenge",
       "code_challenge_method=S256",
       "state=$state"

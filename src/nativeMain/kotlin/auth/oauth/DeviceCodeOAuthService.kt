@@ -31,7 +31,7 @@ class DeviceCodeOAuthService(
 
     val request = DeviceCodeRequest(
       clientId = providerSpec.clientId,
-      scope = providerSpec.scopes.joinToString(" ")
+      scope = providerSpec.scopes.joinToString("+")
     )
 
     logger.log("Request payload: client_id=${request.clientId}, scope=${request.scope}")
