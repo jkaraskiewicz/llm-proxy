@@ -1,5 +1,7 @@
 package providers.specs.anthropic
 
+import io.ktor.http.encodeURLParameter
+import io.ktor.http.encodeURLPathPart
 import providers.models.AuthenticationScheme
 import providers.models.ProviderName
 import providers.specs.ProviderSpec
@@ -20,8 +22,8 @@ class AnthropicSpec : ProviderSpec {
     val params = listOf(
       "response_type=code",
       "client_id=$clientId",
-      "redirect_uri=$redirectUri",
-      "scope=${scopes.joinToString("+")}",
+      "redirect_uri=${redirectUri.encodeURLPathPart()}",
+      "scope=${scopes.joinToString(" ").encodeURLParameter(spaceToPlus = true)}",
       "code_challenge=$codeChallenge",
       "code_challenge_method=S256",
       "state=$state"

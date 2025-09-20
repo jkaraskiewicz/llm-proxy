@@ -1,5 +1,6 @@
 package providers.specs.copilot
 
+import io.ktor.http.encodeURLParameter
 import providers.models.AuthenticationScheme
 import providers.models.ProviderName
 import providers.specs.ProviderSpec
@@ -21,7 +22,7 @@ class CopilotSpec : ProviderSpec {
     // This method isn't used for device flow, but we need to implement it
     val params = listOf(
       "client_id=$clientId",
-      "scope=${scopes.joinToString(" ")}"
+      "scope=${scopes.joinToString(" ").encodeURLParameter(spaceToPlus = true)}"
     ).joinToString("&")
 
     return "$authorizationUrl?$params"
