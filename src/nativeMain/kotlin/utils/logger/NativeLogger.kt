@@ -6,6 +6,10 @@ import platform.posix.*
 import kotlinx.cinterop.*
 
 class NativeLogger : Logger {
+  override fun debug(message: String) {
+    println(message)
+  }
+
   override fun log(message: String) {
     println(message)
   }

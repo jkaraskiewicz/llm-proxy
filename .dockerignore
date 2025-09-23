@@ -1,0 +1,41 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts (except what we need)
+build/
+!build/bin/native/releaseExecutable/
+
+# Gradle cache (will be downloaded in container)
+.gradle/
+
+# Documentation
+README.md
+GEMINI.md
+*.md
+
+# Docker files (not needed in image)
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Logs
+*.log
+
+# Token files
+.llm-proxy-tokens.json
+
+# Temporary files
+tmp/
+temp/

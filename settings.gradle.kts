@@ -1,4 +1,4 @@
-rootProject.name = "claude-proxy"
+rootProject.name = "llm-proxy"
 
 pluginManagement {
   repositories {

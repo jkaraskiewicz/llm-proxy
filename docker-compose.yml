@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  llm-proxy:
+    build:
+      context: .
+      args:
+        PUID: ${PUID:-1000}
+        PGID: ${PGID:-1000}
+    container_name: llm-proxy
+    ports:
+      - "${PROXY_PORT:-8080}:8080"
+    volumes:
+      - "${TOKEN_STORAGE_PATH:-./data}:/app/data"
+    restart: unless-stopped
