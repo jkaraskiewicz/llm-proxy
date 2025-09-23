@@ -6,6 +6,7 @@ A proxy server for LLM providers.
 
 ```bash
 ./gradlew build
+./build/bin/native/releaseExecutable/llm-proxy.kexe [provider] auth
 ./build/bin/native/releaseExecutable/llm-proxy.kexe [provider] serve
 ```
 
